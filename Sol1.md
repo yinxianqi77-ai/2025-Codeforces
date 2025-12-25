@@ -49,7 +49,7 @@ tags:bitmasks,constructive algorithms,greedy,math,recursion
 解法：假设我们已经得到使得 $S_{n-1}(p)$ 最优的数组 $f_{n-1}$ （长度为 $2^{n-1}$ ），现在考虑使 $S_{n}(p)$ 最优。首先，末位为 $1$ 的数有 $2^{n-1}$ 个，并且与剩下的位数独立，所以最优的安排方式是将这些数安排在前面，剩下 $n-1$ 位的摆放方式要最优，就是按照 $f_{n-1}$ 排列，所以最佳数组 $f_{n}$ 是：   
 
 $$
-f_{n} = [2f_{n-1}+1\,\, \mathrm{for}\,\, \_ \,\, \mathrm{in} \,\, \mathrm{range}(2^{n-1})] + \mathrm{list}(\mathrm{range}(0,2^n,2))
+f_{n} = [2f_{n-1}+1] + \mathrm{list}(\mathrm{range}(0,2^n,2))
 $$
 ```python
 perm = [[1,0]]
@@ -223,41 +223,27 @@ $$
 $$
 
 故可以在 $O(n+m)$ 的时间复杂度内解决。
-回到本题，观察 $f(x)$ 可以发现它可以拆分成 $\lceil \log_{2}n \rceil$ 个等差数列，第 $i$ 个数列的位置间隔为 $2^i$ ，公差为 $2^i(2^i-2^{i-1})$，首项为0，于是可以对每一个等差数列如法炮制。时间复杂度 $O((n+m)\log n)$
+回到本题，观察 $f(x)$ 可以发现它可以拆分成 $\lceil \log_{2}n \rceil$ 个等差数列，第 $i$ 个数列的位置间隔为 $2^i$ ，公差为 $2^i(2^i-2^{i-1})$，首项为0，于是可以对每一个等差数列如法炮制。 具体而言，对于位置间隔为 $k$ 的等差数列，我们可以建立 $k$ 个二阶差分数组，根据初始位置的不同在对应的数组上做变化。
+时间复杂度 $O((n+m)\log n)$
 ```python
 from math import ceil
 for _ in range(int(input())):
     n,q = map(int,input().split())
     query = [list(map(int,input().split())) for _ in range(q)]
-    k = len(bin(n)) - 2
+    k = len(bin(n)) - 2 # 等价于ceil(log_2 n)
     start = 0
     water = [0]*n
     for i in range(k):
-        step = 2**i
-        delta = step-start
+        step = 2**i # 等差数列的位置间隔
+        delta = step-start # 每一个等差数列的公差
         start = 2**i
         dif2 = [[0]*(n//step+3) for _ in range(step)]
         for l,r in query:
-            if r-l+1 < step:
+            if r-l+1 < step: # 如果区间间隔太小以至于不存在第 i 个等差数列
                 continue
             first = l + step-1
-            m = (first-1)%step
-            dl = ceil(first/step)
-            dr = (r-first)//step+dl
+            m = (first-1)%step # 用初始位置的余数分类到对应二阶差分数组
+            dl = ceil(first/step) # 差分数组处对应的起点
+            dr = (r-first)//step+dl # 差分数组处对应的终点
+            # 二阶差分数组只会有三个位置的数变化
             dif2[m][dl-1] += delta*step
-            dif2[m][dr] += -delta*(dr-dl+2)*step
-            dif2[m][dr+1] += delta*(dr-dl+1)*step
-        dif1 = [[0] for _ in range(step)]
-        for j in range(step):
-            for a in range(n//step+3):
-                dif1[j].append(dif1[j][-1]+dif2[j][a])
-        new = [[0] for _ in range(step)]
-        for j in range(step):
-            for a in range(n//step+4):
-                new[j].append(new[j][-1]+dif1[j][a])
-        for a in range(2,n//step+3):
-            for j in range(step):
-                if j+(a-2)*step<n:
-                    water[j+(a-2)*step] += new[j][a]
-    print(*water)
-```
