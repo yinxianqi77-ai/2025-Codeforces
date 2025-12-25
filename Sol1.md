@@ -198,6 +198,67 @@ else:
                 print(s.index("b")+1)
 ```
 
+## G. Blackslex and Penguin Migration(Challenge)
+https://codeforces.com/contest/2179/problem/G   
+（在challenge版本中，你最多只能查询 $3n^{2}$ 次。）  
+tags:brute force,interactive,math
+
+为了确定所有点的相对位置，我们需要找到一些点的绝对位置。注意到如果从任意一个点开始查询，距离它最远的点一定在角上，所以可以先选定一个点 $A$，查询 $n^{2}-1$ 次，得到一个确定在角上的点 $B$。  
+光有一个位置确定的点是不够的，我们至少还需要一个点，注意到两个相邻的角 $B,C$ 的距离为 $n-1,$并且当点 $A$ 不是一个角时，角上的点 $C$ 相较于其他所有距离为 $n-1$ 的点，它到点 $A$ 的距离都更大，所以可以确定点 $C$。当 $A$ 是一个角（最大距离为 $2n-2$ ）时就更简单了，对于所有到点 $A$ 距离为 $n-1$ 的点，随机选择一个点，测量它到其他点的距离，距离最大的就一定在角上。   
+最后再测一下所有点到 $C$ 的距离就可以唯一确定其他点的位置了。 
+```python
+for _ in range(int(input())):
+    n = int(input())
+    ans = [[0]*n for _ in range(n)]
+    disa = {1:0}
+    maxd = 0
+    cand = []
+    for i in range(2,n**2+1):
+        print(f"? 1 {i}")
+        disa[i] = int(input())
+        if disa[i] == n-1:
+            cand.append(i)
+        if maxd < disa[i]:
+            maxd = disa[i]
+            c1 = i
+    if maxd == 2*n-2:
+        c1 = 1
+        maxd = 0
+        idx = 0
+        start = cand[0]
+        for i in range(1,n):
+            print(f"? {start} {cand[i]}")
+            d = int(input())
+            if d > maxd:
+                maxd = d
+                idx = i
+        c2 = cand[idx]
+        dic = disa
+    else:
+        cand = []
+        disb = {c1:0}
+        for i in range(1,n**2+1):
+            print(f"? {c1} {i}")
+            disb[i] = int(input())
+            if disb[i] == n-1:
+                cand.append(i)
+        maxd = 0
+        for c in cand:
+            if disa[c] > maxd:
+                maxd = disa[c]
+                c2 = c
+        dic = disb
+    disc = {}
+    for i in range(1,n**2+1):
+        print(f"? {c2} {i}")
+        disc[i] = int(input())
+        x = (dic[i]+disc[i]-(n-1))//2
+        y = dic[i] - x
+        ans[x][y] = i
+    print("!")
+    for _ in range(n):
+        print(*ans[_])
+```
 ## H. Blackslex and Plants
 https://codeforces.com/contest/2179/problem/H   
 tags:bitmasks,prefix sum,dp,math,difference
@@ -247,3 +308,22 @@ for _ in range(int(input())):
             dr = (r-first)//step+dl # 差分数组处对应的终点
             # 二阶差分数组只会有三个位置的数变化
             dif2[m][dl-1] += delta*step
+            dif2[m][dr] += -delta*(dr-dl+2)*step
+            dif2[m][dr+1] += delta*(dr-dl+1)*step
+        # 重构一阶差分数组（前后各有一个0）
+        dif1 = [[0] for _ in range(step)]
+        for j in range(step):
+            for a in range(n//step+3):
+                dif1[j].append(dif1[j][-1]+dif2[j][a])
+        # 重构原数组（前后各有两个0）
+        new = [[0] for _ in range(step)]
+        for j in range(step):
+            for a in range(n//step+4):
+                new[j].append(new[j][-1]+dif1[j][a])
+        # 将所有原数组变成一个
+        for a in range(2,n//step+3):
+            for j in range(step):
+                if j+(a-2)*step<n:
+                    water[j+(a-2)*step] += new[j][a]
+    print(*water)
+```
