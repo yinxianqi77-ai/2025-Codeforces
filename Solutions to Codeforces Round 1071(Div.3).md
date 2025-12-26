@@ -11,7 +11,7 @@ for _ in range(int(input())):
 ```
 
 ## B. Blackslex and Showering
-https://codeforces.com/contest/2179/problem/B   
+https://codeforces.com/contest/2179/problem/B 以及 http://cs101.openjudge.cn/cs1012025feclass11/M30442/    
 tags:dp,greedy,implementation
 
 解法：直接模拟过程即可，注意左右的边界条件。
