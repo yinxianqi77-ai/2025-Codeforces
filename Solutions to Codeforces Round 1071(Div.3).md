@@ -259,6 +259,7 @@ for _ in range(int(input())):
     for _ in range(n):
         print(*ans[_])
 ```
+冷知识：你可以在每一个样例的Output中查看自己程序的query次数。
 ## H. Blackslex and Plants
 https://codeforces.com/contest/2179/problem/H   
 tags:bitmasks,prefix sum,dp,math,difference
